@@ -30,13 +30,13 @@
                         </label>
                         <div class="controls">
                             <input type="text" id="username"
-                                class="input-small"
+                                class="input-small" value="killkill"
                                 placeholder="root" />
                             <div class="input-prepend">
                                 <span class="add-on">@</span><input
                                     type="text"
                                     id="hostname"
-                                    class="input-large"
+                                    class="input-large" value="localhost"
                                     placeholder="localhost" />
                                 <span class="add-on">port</span><input
                                     type="text"
@@ -119,6 +119,7 @@
 
             <div id="term">
             </div>
+            <hr/>
 
         </div>
         <!--
@@ -136,12 +137,27 @@
         <script type="application/javascript">
             function openTerminal(options) {
                 var client = new WSSHClient();
-                var term = new Terminal(80, 24, function(key) {
+                /*
+                var term = new Terminal(120, 24, function(key) {
                     client.send(key);
                 });
+                */
+                var term =new Terminal({
+                    cols: 120,
+                    rows: 24,
+                    useStyle: true,
+                    screenKeys: true
+                });
+                term.on('data', function(key) {
+                    client.send(key);
+                });
+                term.on('title', function(title) {
+                    document.title = title;
+                });
+                //term.open(document.body);
                 term.open();
                 $('.terminal').detach().appendTo('#term');
-                term.resize(80, 24);
+                term.resize(120, 24);
                 term.write('Connecting...');
                 client.connect($.extend(options, {
                     onError: function(error) {
@@ -153,6 +169,7 @@
                     },
                     onClose: function() {
                         term.write('Connection Reset By Peer');
+                        term.destroy();
                     },
                     onData: function(data) {
                         term.write(data);
